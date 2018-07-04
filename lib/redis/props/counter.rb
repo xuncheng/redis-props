@@ -17,7 +17,7 @@ class Redis
         # @return [type] [description]
         def counter(name, options={}, &blk)
           register_redis_props(name, :counter, options)
-          redis = redis_field_redis(name)
+          redis = redis_prop_redis_pool(name)
 
           # Redis: GET
           define_method(name) do

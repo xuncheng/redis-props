@@ -70,7 +70,7 @@ class Redis
       #
       def mget(objects, fields)
         pools_with_name = fields.each_with_object({}) do |name, hash|
-          pool = objects[0].class.redis_field_redis(name)
+          pool = objects[0].class.redis_prop_redis_pool(name)
           hash[pool] ||= []
           hash[pool] << name
         end

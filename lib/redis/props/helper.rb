@@ -31,7 +31,7 @@ class Redis
         #
         # @return [Boolean]
         #
-        def redis_field_defined?(name)
+        def redis_prop_defined?(name)
           redis_props.has_key?(name.to_sym)
         end
 
@@ -42,7 +42,7 @@ class Redis
         #
         # @return [Symbol]
         #
-        def redis_field_type(name)
+        def redis_prop_type(name)
           redis_props.dig(name.to_sym, :type)
         end
 
@@ -53,14 +53,14 @@ class Redis
         #
         # @return [ConnectionPool]
         #
-        def redis_field_redis(name)
+        def redis_prop_redis_pool(name)
           pool_name = redis_props.dig(name.to_sym, :redis) || :default
           Redis::Props.pools[pool_name]
         end
       end
 
       #
-      # Prefix of Redis Key of Redis::Props, consists with Class name string in plural form
+      # Returns the Redis Key of Redis::Props, consists with Class name string in plural form
       # and Instance id.
       #
       # Example:
@@ -68,33 +68,8 @@ class Redis
       # a User instance with id = 1 -> `users:1`
       # a HolyLight::Spammer instance with id = 5 -> `holy_light/spammers:5`
       #
-      #
       # @return [String]
       #
-      def redis_props_prefix
-        id = self.id
-        raise Redis::Props::NilObjectId if id.nil?
-        klass = self.class.to_s.pluralize.underscore
-        "#{klass}:#{id}"
-      end
-
-      #
-      # Returns the final Redis Key of a certain Redis::Props, teh value will be saved in redis with
-      # this value.
-      #
-      # Example:
-      #
-      # a User instance with id = 1 defines a counter named `likes_count` -> users:1:likes_count
-      #
-      #
-      # @param [String] name
-      #
-      # @return [String]
-      #
-      def redis_props_key(name)
-        "#{redis_props_prefix}:#{name}"
-      end
-
       def object_key
         raise Redis::Props::NilObjectId if self.id.nil?
         "#{self.class.to_s.pluralize.underscore}:#{self.id}"
@@ -115,7 +90,7 @@ class Redis
       #
       def redis_props_mget(*names)
         pools_with_name = names.each_with_object({}) do |name, hash|
-          pool = self.class.redis_field_redis(name)
+          pool = self.class.redis_prop_redis_pool(name)
           hash[pool] ||= []
           hash[pool] << name
         end
@@ -134,7 +109,7 @@ class Redis
       # :nodoc
       def assign_values(new_values)
         new_values.each do |field, val|
-          type = self.class.redis_field_type(field)
+          type = self.class.redis_prop_type(field)
           ivar_name = :"@#{field}"
 
           case type
@@ -149,7 +124,7 @@ class Redis
             else
               value = cast_value(type, try("#{field}_default_value"))
               instance_variable_set(ivar_name, value)
-              self.class.redis_field_redis(field).with do |conn|
+              self.class.redis_prop_redis_pool(field).with do |conn|
                 conn.hset(object_key, field, value)
               end
             end

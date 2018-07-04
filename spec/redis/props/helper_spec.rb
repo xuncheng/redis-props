@@ -46,50 +46,40 @@ describe Redis::Props::Helper do
     end
   end
 
-  describe ".redis_field_defined?" do
+  describe ".redis_prop_defined?" do
     it "should return true for a defined value" do
-      expect(Dummy.redis_field_defined?(:counter1)).to eq(true)
+      expect(Dummy.redis_prop_defined?(:counter1)).to eq(true)
     end
 
     it "should return false for a undefined value" do
-      expect(Dummy.redis_field_defined?(:time3)).to eq(false)
+      expect(Dummy.redis_prop_defined?(:time3)).to eq(false)
     end
   end
 
-  describe ".redis_field_type" do
-    it "returns the type for a defined value" do
+  describe ".redis_prop_type" do
+    it "returns the type for a defined prop" do
       Dummy.register_redis_props("foo", "counter")
-      expect(Dummy.redis_field_type("foo")).to eq(:counter)
+      expect(Dummy.redis_prop_type("foo")).to eq(:counter)
     end
   end
 
-  describe "#redis_props_prefix" do
+  describe "#object_key" do
     let(:dummy) { Dummy.new }
     let(:spammer) { HolyLight::Spammer.new }
 
     it "raises error if the object's id is nil" do
       allow(dummy).to receive(:id) { nil }
-      expect { dummy.redis_props_prefix }.to raise_error(Redis::Props::NilObjectId)
+      expect { dummy.object_key }.to raise_error(Redis::Props::NilObjectId)
     end
 
     it "returns correctly for valid objects" do
-      expect(dummy.redis_props_prefix).to eq("dummies:#{dummy.id}")
-      expect(spammer.redis_props_prefix).to eq("holy_light/spammers:#{spammer.id}")
+      expect(dummy.object_key).to eq("dummies:#{dummy.id}")
+      expect(spammer.object_key).to eq("holy_light/spammers:#{spammer.id}")
     end
 
     it "should return correctly for `HolyLight::Spammer`" do
       spammer = HolyLight::Spammer.new
-      expect(spammer.redis_props_prefix).to eq("holy_light/spammers:#{spammer.id}")
-    end
-  end
-
-  describe "#redis_props_key" do
-    let(:dummy) { Dummy.new }
-
-    it "returns the redis key correctly" do
-      allow(dummy).to receive(:redis_props_prefix) { "foobar" }
-
-      expect(dummy.redis_props_key("lol")).to eq("foobar:lol")
+      expect(spammer.object_key).to eq("holy_light/spammers:#{spammer.id}")
     end
   end
 

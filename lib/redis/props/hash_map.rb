@@ -19,6 +19,22 @@ class Redis
           end
         end
       end
+
+      #
+      # Returns the final Redis Key of a certain Redis::Props, teh value will be saved in redis with
+      # this value.
+      #
+      # Example:
+      #
+      # a User instance with id = 1 defines a Hash::Map named `submission_counts` -> users:1:submission_counts
+      #
+      # @param [String] name
+      #
+      # @return [String]
+      #
+      def redis_props_key(name)
+        "#{object_key}:#{name}"
+      end
     end
   end
 end
