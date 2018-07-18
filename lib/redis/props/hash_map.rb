@@ -21,8 +21,8 @@ class Redis
       end
 
       #
-      # Returns the final Redis Key of a certain Redis::Props, teh value will be saved in redis with
-      # this value.
+      # Returns the final Redis Key of a certain Redis::Props, the value will be saved in redis with
+      # this key.
       #
       # Example:
       #
